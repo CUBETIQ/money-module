@@ -2,7 +2,7 @@ package com.cubetiqs.libra.moneyutils
 
 open class Money(
     var value: Double,
-    var currency: String = "USD"
+    private var currency: String = "USD"
 ) : StdMoney {
 
     //////////////////// - PROPERTIES - ////////////////////
@@ -19,5 +19,10 @@ open class Money(
 
     override fun toString(): String {
         return "Money(value=${getMoneyValue()}, currency='${getMoneyCurrency()}')"
+    }
+
+    companion object {
+        val ZERO: StdMoney
+            get() = Money(value = 0.0)
     }
 }
