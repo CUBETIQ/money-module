@@ -3,6 +3,9 @@ package com.cubetiqs.libra.moneyutils
 /**
  * Default standard money style
  * We have only value and currency of money
+ *
+ * @author sombochea
+ * @since 1.0
  */
 interface StdMoney {
     /**
@@ -14,6 +17,8 @@ interface StdMoney {
 
     /**
      * Get money's currency from current state.
+     *
+     * @return String
      */
     fun getCurrency(): String
 }
