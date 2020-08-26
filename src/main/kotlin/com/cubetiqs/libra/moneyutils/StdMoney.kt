@@ -13,12 +13,12 @@ interface StdMoney {
      *
      * @return Double
      */
-    fun getValue(): Double
+    fun getMoneyValue(): Double
 
     /**
      * Get money's currency from current state.
      *
      * @return String
      */
-    fun getCurrency(): String
+    fun getMoneyCurrency(): String
 }

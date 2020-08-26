@@ -1,26 +1,23 @@
 package com.cubetiqs.libra.moneyutils
 
 open class Money(
-    private var value: Double,
-    private var currency: String = "USD"
+    var value: Double,
+    var currency: String = "USD"
 ) : StdMoney {
-    override fun getValue(): Double {
+
+    //////////////////// - PROPERTIES - ////////////////////
+
+    override fun getMoneyValue(): Double {
         return this.value
     }
 
-    fun setValue(value: Double) {
-        this.value = value
-    }
-
-    override fun getCurrency(): String {
+    override fun getMoneyCurrency(): String {
         return this.currency.toUpperCase()
     }
 
-    fun setCurrency(currency: String) {
-        this.currency = currency
-    }
+    //////////////////// - GENERIC - ////////////////////
 
     override fun toString(): String {
-        return "Money(value=${getValue()}, currency='${getCurrency()}')"
+        return "Money(value=${getMoneyValue()}, currency='${getMoneyCurrency()}')"
     }
 }

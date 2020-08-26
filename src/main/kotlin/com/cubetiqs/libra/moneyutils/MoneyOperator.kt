@@ -1,7 +1,7 @@
 package com.cubetiqs.libra.moneyutils
 
-operator fun Money.unaryMinus() = (-value)
-operator fun Money.unaryPlus() = (+value)
+operator fun Money.unaryMinus() = (-getMoneyValue())
+operator fun Money.unaryPlus() = (+getMoneyValue())
 operator fun Money.inc() = Money(value++)
 operator fun Money.dec() = Money(value--)
 operator fun Money.plus(other: Money) = Money(value + other.value)
