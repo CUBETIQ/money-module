@@ -15,8 +15,11 @@ object MoneyConfig {
      * Value is the rate
      */
     private val config: MutableMap<String, Double> = mutableMapOf()
-    private var valid: Boolean = false
-    fun isValid() = valid
+
+    // validate the config, if have it's valid
+    fun isValid(): Boolean {
+        return this.config.isNotEmpty()
+    }
 
     /**
      * Money properties for money config format
@@ -58,9 +61,6 @@ object MoneyConfig {
                 throw MoneyCurrencyStateException("money config format is not valid!")
             }
         }
-
-        // validate the config is load or not
-        this.valid = this.config.isNotEmpty()
     }
 
     // all currencies with its rate
