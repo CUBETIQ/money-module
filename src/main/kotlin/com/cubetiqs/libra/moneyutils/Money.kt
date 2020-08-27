@@ -2,7 +2,7 @@ package com.cubetiqs.libra.moneyutils
 
 open class Money(
     var value: Double,
-    private var currency: String = "USD"
+    @SpecialString(trim = true, upperCase = true) private var currency: String = "USD"
 ) : StdMoney {
 
     //////////////////// - PROPERTIES - ////////////////////
@@ -12,7 +12,7 @@ open class Money(
     }
 
     override fun getMoneyCurrency(): String {
-        return this.currency.toUpperCase()
+        return this.currency
     }
 
     //////////////////// - GENERIC - ////////////////////

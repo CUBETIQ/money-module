@@ -20,5 +20,6 @@ interface StdMoney {
      *
      * @return String
      */
+    @SpecialString
     fun getMoneyCurrency(): String
 }
