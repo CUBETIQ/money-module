@@ -1,5 +1,6 @@
 import com.cubetiqs.libra.moneyutils.Money
 import com.cubetiqs.libra.moneyutils.MoneyConfig
+import com.cubetiqs.libra.moneyutils.MoneyCurrency
 import com.cubetiqs.libra.moneyutils.MoneyExchangeUtils
 import com.cubetiqs.libra.moneyutils.plus
 import com.cubetiqs.libra.moneyutils.times
@@ -38,5 +39,19 @@ class MoneyTests {
         val moneyKhr = MoneyExchangeUtils.exchange(moneyUsd, "KHR")
 
         Assert.assertEquals(8000.0, moneyKhr.getMoneyValue(), 0.0)
+    }
+
+    @Test
+    fun money_exchange_config_builder_test() {
+        MoneyConfig.propertiesBuilder
+            .setDeliEqual('=')
+            .setDeliSplit(';')
+
+        MoneyConfig.parse("USD=1,KHR=4000,EUR=0.99")
+
+        val moneyUsd = Money.ONE
+        val moneyKhr = Money.create(20000.0, MoneyCurrency.KHR)
+
+        val result = moneyUsd
     }
 }
