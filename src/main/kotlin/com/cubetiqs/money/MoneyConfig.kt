@@ -50,9 +50,14 @@ object MoneyConfig {
 
         val rates = config.split(getProperties().deliSplit)
         rates.map { i ->
-            val temp = i.split(getProperties().deliEqual)
+            val temp = i
+                // remove the quote from string
+                .replace("\"", "")
+                .split(getProperties().deliEqual)
             if (temp.size == 2) {
-                val currency = temp[0].toUpperCase().trim()
+                val currency = temp[0]
+                    .toUpperCase()
+                    .trim()
                 val value = temp[1].toDouble()
                 if (MoneyConfig.config.containsKey(currency)) {
                     MoneyConfig.config.replace(currency, value)
@@ -72,6 +77,29 @@ object MoneyConfig {
         } else {
             config[currencyKey] = rate
         }
+    }
+
+    fun appendRate(provider: MoneyExchangeProvider) = apply {
+        val currency = provider.getCurrency()
+        val rate = provider.getRate()
+        this.appendRate(currency, rate)
+    }
+
+    /**
+     * Json Format must be, example below
+     *
+     * {
+     *  "USD": 1,
+     *  "EUR": 0.99,
+     *  "...": ...
+     * }
+     */
+    fun fromJson(configJson: String, clearAllStates: Boolean = false) {
+        val transformValues = configJson
+            .removePrefix("{")
+            .removeSuffix("}")
+
+        parse(transformValues, clearAllStates)
     }
 
     // all currencies with its rate

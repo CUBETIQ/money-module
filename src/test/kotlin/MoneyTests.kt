@@ -12,16 +12,15 @@ class MoneyTests {
 //            .setDeliSplit(',')
 //            .build()
 
-        val properties = buildMoneyConfigProperties {
-            setDeliEqual(':')
-            setDeliSplit(',')
-        }
-
         applyMoneyConfig {
-            setProperties(properties)
+            setProperties(buildMoneyConfigProperties {
+                setDeliEqual(':')
+                setDeliSplit(',')
+            })
             // parse("USD:1,KHR:4000")
-            appendRate("usd", 1.0)
-            appendRate("khr", 4000.0)
+            // appendRate("usd", 1.0)
+            // appendRate("khr", 4000.0)
+            fromJson(MyBatchRates.getJsonRates())
         }
 
         // Is valid for money config?
@@ -32,5 +31,13 @@ class MoneyTests {
 
         // Is correct exchange?
         Assert.assertEquals(8000.0, moneyKhr.getMoneyValue(), 0.0)
+    }
+
+    object MyBatchRates {
+        fun getJsonRates(): String {
+            return """
+                {"USD": 1.0,"KHR": 4000.0}
+            """.trimIndent()
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.cubetiqs.money
 
 interface MoneyExchangeProvider {
-    fun getRate(currency: StdMoney.Currency): Double
+    fun getCurrency(): String
+    fun getRate(): Double
 }
