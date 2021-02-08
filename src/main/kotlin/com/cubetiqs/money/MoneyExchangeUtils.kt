@@ -11,11 +11,7 @@ object MoneyExchangeUtils {
         return amountFrom * ((baseRate / rateFrom) / (baseRate / rateTo))
     }
 
-    fun getBaseCurrency(): MoneyCurrency {
-        return MoneyCurrency.USD
-    }
-
-    fun getExchangeRate(currency: MoneyCurrency): Double {
-        return 0.0
+    fun getBaseCurrency(): StdMoney.Currency {
+        return StdMoney.USD
     }
 }

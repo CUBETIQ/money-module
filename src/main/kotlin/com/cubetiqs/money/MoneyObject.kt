@@ -4,7 +4,7 @@ import java.io.Serializable
 
 sealed class MoneyObject : Serializable, StdMoney {
     private var value: Double = 0.0
-    private var currency: MoneyCurrency = MoneyCurrency.USD
+    private var currency: StdMoney.Currency = MoneyCurrency.USD
     private val moneyStates: MutableMap<MoneyCurrency, MoneyState> = mutableMapOf()
 
     constructor(value: Double, currency: MoneyCurrency) {
@@ -32,7 +32,7 @@ sealed class MoneyObject : Serializable, StdMoney {
 
     companion object {
         @JvmStatic
-        private fun defaultCurrency(): MoneyCurrency {
+        private fun defaultCurrency(): StdMoney.Currency {
             return MoneyExchangeUtils.getBaseCurrency()
         }
     }

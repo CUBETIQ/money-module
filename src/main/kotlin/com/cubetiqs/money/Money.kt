@@ -12,7 +12,7 @@ open class Money(
 
     // not imply with exchange rate yet
     override fun StdMoney.getExchangedTo(currency: StdMoney.Currency): Double {
-        return getMoneyValue()
+        return MoneyExchangeUtils.exchange(this, currency).getMoneyValue()
     }
 
     override fun getMoneyCurrency(): StdMoney.Currency {
@@ -22,7 +22,7 @@ open class Money(
     //////////////////// - GENERIC - ////////////////////
 
     override fun toString(): String {
-        return "Money(value=${getMoneyValue()}, currency='${getMoneyCurrency()}')"
+        return "Money(value=${getMoneyValue()}, currency='${getMoneyCurrency().getCurrency()}')"
     }
 
     override fun inc(): Money = apply {
@@ -38,6 +38,11 @@ open class Money(
         return Money(value = temp, currency = this.currency)
     }
 
+    override fun minus(other: StdMoney): Money {
+        val temp = this.value - other.getExchangedTo(this.currency)
+        return Money(value = temp, currency = this.currency)
+    }
+
     override fun divide(other: StdMoney): Money {
         val temp = this.value / other.getExchangedTo(this.currency)
         return Money(value = temp, currency = this.currency)
@@ -48,27 +53,28 @@ open class Money(
         return Money(value = temp, currency = this.currency)
     }
 
-    override fun plusAssign(other: StdMoney) {
+    override fun plusAssign(other: StdMoney): Money = apply {
         this.value = this.value + other.getExchangedTo(this.currency)
     }
 
-    override fun divideAssign(other: StdMoney) {
+    override fun minusAssign(other: StdMoney): Money = apply {
+        this.value = this.value - other.getExchangedTo(this.currency)
+    }
+
+    override fun divideAssign(other: StdMoney): Money = apply {
         this.value = this.value / other.getExchangedTo(this.currency)
     }
 
-    override fun multiplyAssign(other: StdMoney) {
+    override fun multiplyAssign(other: StdMoney): Money = apply {
         this.value = this.value * other.getExchangedTo(this.getMoneyCurrency())
     }
 
     companion object {
-        val ZERO: StdMoney
-            get() = Money()
-
         val ONE: StdMoney
-            get() = Money(value = 1.0)
+            get() = StdMoney.initMoney(1.0)
 
         val TEN: StdMoney
-            get() = Money(value = 10.0)
+            get() = StdMoney.initMoney(10.0)
 
         /**
          * Create a new money object with custom value
@@ -81,11 +87,7 @@ open class Money(
         }
 
         fun from(value: Double, currency: String): Money {
-            return create(value, object : StdMoney.Currency {
-                override fun getCurrency(): String {
-                    return currency.toUpperCase().trim()
-                }
-            })
+            return create(value, StdMoney.initCurrency(currency))
         }
 
         fun from(money: StdMoney): Money {

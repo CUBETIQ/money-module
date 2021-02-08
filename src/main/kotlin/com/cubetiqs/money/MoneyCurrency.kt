@@ -11,7 +11,7 @@ import java.io.Serializable
 open class MoneyCurrency(
     private val name: String,
     private val symbol: String? = null,
-    private val configs: Map<String, Any?>? = null,
+    private var configs: Map<String, Any?>? = null,
 ) : Serializable, StdMoney.Currency {
     override fun getCurrency(): String {
         return name.toUpperCase().trim()
@@ -19,6 +19,14 @@ open class MoneyCurrency(
 
     fun getSymbol(): String? {
         return symbol ?: getConfigs()["symbol"]?.toString()
+    }
+
+    fun addConfig(key: String, value: Any?) = apply {
+        if (this.configs.isNullOrEmpty()) {
+            this.configs = mutableMapOf(key to value)
+        } else {
+            (this.configs as MutableMap)[key] = value
+        }
     }
 
     fun getConfigs(): Map<String, Any?> {
@@ -35,9 +43,9 @@ open class MoneyCurrency(
         }
 
         val USD
-            get() = create("USD")
+            get() = StdMoney.USD
 
         val KHR
-            get() = create("KHR")
+            get() = StdMoney.KHR
     }
 }

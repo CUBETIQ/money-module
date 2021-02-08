@@ -35,6 +35,7 @@ interface StdMoney {
 
     interface Operator<T : StdMoney> {
         fun plus(other: StdMoney): T
+        fun minus(other: StdMoney): T
         fun divide(other: StdMoney): T
 
         fun inc(): T
@@ -42,8 +43,42 @@ interface StdMoney {
         fun multiply(other: StdMoney): T
 
         // assign operators
-        fun plusAssign(other: StdMoney)
-        fun divideAssign(other: StdMoney)
-        fun multiplyAssign(other: StdMoney)
+        fun plusAssign(other: StdMoney): T
+        fun minusAssign(other: StdMoney): T
+        fun divideAssign(other: StdMoney): T
+        fun multiplyAssign(other: StdMoney): T
+
+        // none-of-return
+        fun nor() {}
+    }
+
+    companion object {
+        fun initCurrency(currency: String?): Currency {
+            return object : Currency {
+                override fun getCurrency(): String {
+                    return currency?.toUpperCase()?.trim() ?: "USD"
+                }
+            }
+        }
+
+        val USD
+            get() = initCurrency("USD")
+        val KHR
+            get() = initCurrency("KHR")
+
+        fun initMoney(initValue: Double, currency: Currency = USD): StdMoney {
+            return object : StdMoney {
+                override fun getMoneyCurrency(): Currency {
+                    return currency
+                }
+
+                override fun getMoneyValue(): Double {
+                    return initValue
+                }
+            }
+        }
+
+        val ZERO
+            get() = initMoney(0.0, USD)
     }
 }
