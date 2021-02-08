@@ -3,18 +3,31 @@ import org.junit.Assert
 import org.junit.Test
 
 class MoneyTests {
-    @Test
-    fun exchange_2usd_to_khr_test() {
+    private fun initMoneyConfig() {
         applyMoneyConfig {
             setProperties(buildMoneyConfigProperties {
                 setDeliEqual(':')
                 setDeliSplit(',')
             })
-            // parse("USD:1,KHR:4000")
-            // appendRate("usd", 1.0)
-            // appendRate("khr", 4000.0)
+
             fromJson(MyBatchRates.getJsonRates())
         }
+    }
+
+    @Test
+    fun exchange_2usd_to_khr_test() {
+        initMoneyConfig()
+
+//        applyMoneyConfig {
+//            setProperties(buildMoneyConfigProperties {
+//                setDeliEqual(':')
+//                setDeliSplit(',')
+//            })
+//            // parse("USD:1,KHR:4000")
+//            // appendRate("usd", 1.0)
+//            // appendRate("khr", 4000.0)
+//            fromJson(MyBatchRates.getJsonRates())
+//        }
 
         // Is valid for money config?
         Assert.assertTrue(MoneyConfig.isValid())
@@ -37,8 +50,56 @@ class MoneyTests {
     object MyBatchRates {
         fun getJsonRates(): String {
             return """
-                {"USD": 1.0,"KHR": 4000.0}
+                {"USD": 1.0,"KHR": 4000.0, "eur": 0.5}
             """.trimIndent()
         }
+    }
+
+    @Test
+    fun moneyGenerator() {
+        initMoneyConfig()
+
+        val moneyGen = MoneyObject(
+            value = 1.0,
+            currency = "usd",
+            operator = MoneyObject.MoneyOperator.PLUS,
+            with = MoneyObject(
+                value = 8000.0,
+                currency = "khr",
+                operator = MoneyObject.MoneyOperator.MINUS,
+                with = MoneyObject(
+                    value = 1000.0,
+                    currency = "khr",
+                )
+            )
+        )
+
+        val result = moneyGen.compute()
+
+        Assert.assertEquals(2.75, result.getMoneyValue(), 0.0)
+    }
+
+    @Test
+    fun moneyGeneratorBuilder() {
+        initMoneyConfig()
+
+        val expected = 72000.0
+
+        val builder = MoneyObject.builder()
+            .with(10.0, "usd", '+')
+            .with(1.5, "eur", '+')
+            .with(8000.0, "khr")
+            .with(10000.0, "khr")
+            .with(2000.0, "khr")
+            .with(.5, "eur", '-')
+            .with(1.0, "usd")
+            .withCurrency("khr")
+            .build()
+
+        val result = builder.compute()
+
+        println(result)
+
+        Assert.assertEquals(expected, result.getMoneyValue(), 0.0)
     }
 }

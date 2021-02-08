@@ -65,7 +65,7 @@ object MoneyConfig {
                     MoneyConfig.config.put(currency, value)
                 }
             } else {
-                throw MoneyCurrencyStateException("money config format is not valid!")
+                throw MoneyCurrencyStateException("money config format $temp is not valid!")
             }
         }
     }
@@ -107,8 +107,8 @@ object MoneyConfig {
 
     @Throws(MoneyCurrencyStateException::class)
     fun getRate(currency: StdMoney.Currency): Double {
-        return getConfig()[currency.getCurrency().toUpperCase()]
-            ?: throw MoneyCurrencyStateException("money currency $currency is not valid!")
+        return getConfig()[currency.getCurrency().toUpperCase().trim()]
+            ?: throw MoneyCurrencyStateException("money currency ${currency.getCurrency()} is not valid!")
     }
 
     class MoneyConfigProperties(
