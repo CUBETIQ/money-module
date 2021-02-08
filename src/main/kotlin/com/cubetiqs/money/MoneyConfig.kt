@@ -67,8 +67,8 @@ object MoneyConfig {
     fun getConfig() = config
 
     @Throws(MoneyCurrencyStateException::class)
-    fun getRate(currency: String): Double {
-        return getConfig()[currency.toUpperCase()]
+    fun getRate(currency: StdMoney.Currency): Double {
+        return getConfig()[currency.getCurrency().toUpperCase()]
             ?: throw MoneyCurrencyStateException("money currency $currency is not valid!")
     }
 

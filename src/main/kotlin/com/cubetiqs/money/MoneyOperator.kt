@@ -1,12 +1,17 @@
 package com.cubetiqs.money
 
+// unary operators
 operator fun StdMoney.unaryMinus() = (-getMoneyValue())
 operator fun StdMoney.unaryPlus() = (+getMoneyValue())
-operator fun Money.inc() = Money(value++)
-operator fun Money.dec() = Money(value--)
-operator fun StdMoney.plus(other: StdMoney) = Money(getMoneyValue() + other.getMoneyValue())
-operator fun StdMoney.times(other: StdMoney) = Money(getMoneyValue() * other.getMoneyValue())
-operator fun StdMoney.div(other: StdMoney) = Money(getMoneyValue() / other.getMoneyValue())
-operator fun Money.timesAssign(other: StdMoney) {
-    this.value = this.getMoneyValue() * other.getMoneyValue()
-}
+
+// operators
+operator fun StdMoney.inc() = Money.from(this).inc()
+operator fun StdMoney.dec() = Money.from(this).dec()
+operator fun StdMoney.plus(other: StdMoney) = Money.from(this).plusAssign(other)
+operator fun StdMoney.times(other: StdMoney) = Money.from(this).multiplyAssign(other)
+operator fun StdMoney.div(other: StdMoney) = Money.from(this).divideAssign(other)
+
+// assign operators
+operator fun Money.timesAssign(other: StdMoney) = this.multiplyAssign(other)
+operator fun Money.plusAssign(other: StdMoney) = this.plusAssign(other)
+operator fun Money.divAssign(other: StdMoney) = this.divideAssign(other)
