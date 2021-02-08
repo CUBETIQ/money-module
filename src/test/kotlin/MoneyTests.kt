@@ -10,7 +10,7 @@ class MoneyTests {
                 setDeliSplit(',')
             })
 
-            fromJson(MyBatchRates.getJsonRates())
+            fromJsonRates(MyBatchRates.getJsonRates())
         }
     }
 
@@ -46,13 +46,13 @@ class MoneyTests {
         val moneyKhr = moneyUsd exchangeTo "khr"
 
         // Is correct exchange?
-        Assert.assertEquals(8000.0, moneyKhr.getMoneyValue(), 0.0)
+        Assert.assertEquals(8000.0, moneyKhr.getValue(), 0.0)
 
         // complex operators and exchanging
         val sum =
             ((moneyUsd + moneyKhr) * Money.TEN) exchangeTo MoneyCurrency.KHR minusWith (Money.ONE exchangeTo MoneyCurrency.KHR)
 
-        Assert.assertEquals(156000.0, sum.getMoneyValue(), 0.0)
+        Assert.assertEquals(156000.0, sum.getValue(), 0.0)
     }
 
     @Test
@@ -76,7 +76,7 @@ class MoneyTests {
 
         val result = moneyGen.compute()
 
-        Assert.assertEquals(2.75, result.getMoneyValue(), 0.0)
+        Assert.assertEquals(2.75, result.getValue(), 0.0)
     }
 
     @Test
@@ -100,7 +100,7 @@ class MoneyTests {
 
         println(result)
 
-        Assert.assertEquals(expected, result.getMoneyValue(), 0.0)
+        Assert.assertEquals(expected, result.getValue(), 0.0)
     }
 
     @Test
@@ -132,7 +132,7 @@ class MoneyTests {
             .compute()
         val result2 = builder.compute()
 
-        Assert.assertEquals(expected1, result1.getMoneyValue(), 0.0)
-        Assert.assertEquals(expected2, result2.getMoneyValue(), 0.0)
+        Assert.assertEquals(expected1, result1.getValue(), 0.0)
+        Assert.assertEquals(expected2, result2.getValue(), 0.0)
     }
 }

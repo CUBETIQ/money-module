@@ -16,51 +16,51 @@ infix fun StdMoney.divideWith(other: StdMoney): StdMoney = this / other
 infix fun StdMoney.multiplyWith(other: StdMoney): StdMoney = this * other
 
 infix fun StdMoney.plusOf(value: Number): StdMoney = object : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
-        return this@plusOf.getMoneyCurrency()
+    override fun getCurrency(): StdMoney.Currency {
+        return this@plusOf.getCurrency()
     }
 
-    override fun getMoneyValue(): Double {
-        return this@plusOf.getMoneyValue() + value.toDouble()
+    override fun getValue(): Double {
+        return this@plusOf.getValue() + value.toDouble()
     }
 }
 
 infix fun StdMoney.minusOf(value: Number): StdMoney = object : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
-        return this@minusOf.getMoneyCurrency()
+    override fun getCurrency(): StdMoney.Currency {
+        return this@minusOf.getCurrency()
     }
 
-    override fun getMoneyValue(): Double {
-        return this@minusOf.getMoneyValue() - value.toDouble()
+    override fun getValue(): Double {
+        return this@minusOf.getValue() - value.toDouble()
     }
 }
 
 infix fun StdMoney.divideOf(value: Number): StdMoney = object : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
-        return this@divideOf.getMoneyCurrency()
+    override fun getCurrency(): StdMoney.Currency {
+        return this@divideOf.getCurrency()
     }
 
-    override fun getMoneyValue(): Double {
-        return this@divideOf.getMoneyValue() / value.toDouble()
+    override fun getValue(): Double {
+        return this@divideOf.getValue() / value.toDouble()
     }
 }
 
 infix fun StdMoney.multiplyOf(value: Number): StdMoney = object : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
-        return this@multiplyOf.getMoneyCurrency()
+    override fun getCurrency(): StdMoney.Currency {
+        return this@multiplyOf.getCurrency()
     }
 
-    override fun getMoneyValue(): Double {
-        return this@multiplyOf.getMoneyValue() * value.toDouble()
+    override fun getValue(): Double {
+        return this@multiplyOf.getValue() * value.toDouble()
     }
 }
 
 infix fun Number.withCurrency(currency: StdMoney.Currency): StdMoney = object : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
+    override fun getCurrency(): StdMoney.Currency {
         return currency
     }
 
-    override fun getMoneyValue(): Double {
+    override fun getValue(): Double {
         return this@withCurrency.toDouble()
     }
 }
@@ -72,8 +72,8 @@ infix fun Number.withCurrency(currency: String): StdMoney = this withCurrency ob
 }
 
 // toString function for StdMoney interface
-fun StdMoney.asString(): String = "StdMoney(value=${getMoneyValue()}, currency=${getMoneyCurrency().getCurrency()})"
-fun StdMoney.asMoneyString(): String = "${getMoneyValue()}:${getMoneyCurrency().getCurrency()}"
+fun StdMoney.asString(): String = "StdMoney(value=${getValue()}, currency=${getCurrency().getCurrency()})"
+fun StdMoney.asMoneyString(): String = "${getValue()}:${getCurrency().getCurrency()}"
 fun String?.fromStringToMoney(): StdMoney {
     val values = this?.split(":")
     if (values.isNullOrEmpty()) {
@@ -84,18 +84,18 @@ fun String?.fromStringToMoney(): StdMoney {
     val value = values.lastOrNull()?.toDouble() ?: 0.0
 
     return object : StdMoney {
-        override fun getMoneyCurrency(): StdMoney.Currency {
+        override fun getCurrency(): StdMoney.Currency {
             return currency
         }
 
-        override fun getMoneyValue(): Double {
+        override fun getValue(): Double {
             return value
         }
     }
 }
 
 fun StdMoney.isMatchedCurrency(currency: StdMoney.Currency) =
-    this.getMoneyCurrency().getCurrency().equals(currency.getCurrency(), ignoreCase = true)
+    this.getCurrency().getCurrency().equals(currency.getCurrency(), ignoreCase = true)
 
 inline fun buildMoneyConfigProperties(
     builderAction: MoneyConfig.MoneyConfigProperties.MoneyConfigPropertiesBuilder.() -> Unit

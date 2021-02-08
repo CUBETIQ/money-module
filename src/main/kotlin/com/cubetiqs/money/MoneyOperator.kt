@@ -1,8 +1,8 @@
 package com.cubetiqs.money
 
 // unary operators
-operator fun StdMoney.unaryMinus() = (-getMoneyValue())
-operator fun StdMoney.unaryPlus() = (+getMoneyValue())
+operator fun StdMoney.unaryMinus() = (-getValue())
+operator fun StdMoney.unaryPlus() = (+getValue())
 
 // operators
 operator fun StdMoney.inc() = Money.from(this).inc()

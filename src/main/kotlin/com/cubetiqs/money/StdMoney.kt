@@ -13,14 +13,14 @@ interface StdMoney {
      *
      * @return Double
      */
-    fun getMoneyValue(): Double
+    fun getValue(): Double
 
     /**
      * Get money's currency from current state.
      *
      * @return String
      */
-    fun getMoneyCurrency(): Currency
+    fun getCurrency(): Currency
 
     /**
      * Allow for money currency called and implemented
@@ -68,11 +68,11 @@ interface StdMoney {
 
         fun initMoney(initValue: Double, currency: Currency = USD): StdMoney {
             return object : StdMoney {
-                override fun getMoneyCurrency(): Currency {
+                override fun getCurrency(): Currency {
                     return currency
                 }
 
-                override fun getMoneyValue(): Double {
+                override fun getValue(): Double {
                     return initValue
                 }
             }

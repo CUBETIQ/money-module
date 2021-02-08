@@ -94,7 +94,7 @@ object MoneyConfig {
      *  "...": ...
      * }
      */
-    fun fromJson(configJson: String, clearAllStates: Boolean = false) {
+    fun fromJsonRates(configJson: String, clearAllStates: Boolean = false) {
         val transformValues = configJson
             .removePrefix("{")
             .removeSuffix("}")

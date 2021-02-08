@@ -6,23 +6,23 @@ open class Money(
 ) : StdMoney, StdMoney.Operator<Money>, StdMoney.ExchangeOperator {
     //////////////////// - PROPERTIES - ////////////////////
 
-    override fun getMoneyValue(): Double {
+    override fun getValue(): Double {
         return this.value
     }
 
     // not imply with exchange rate yet
     override fun StdMoney.getExchangedTo(currency: StdMoney.Currency): Double {
-        return MoneyExchangeUtils.exchange(this, currency).getMoneyValue()
+        return MoneyExchangeUtils.exchange(this, currency).getValue()
     }
 
-    override fun getMoneyCurrency(): StdMoney.Currency {
+    override fun getCurrency(): StdMoney.Currency {
         return this.currency
     }
 
     //////////////////// - GENERIC - ////////////////////
 
     override fun toString(): String {
-        return "Money(value=${getMoneyValue()}, currency='${getMoneyCurrency().getCurrency()}')"
+        return "Money(value=${getValue()}, currency='${getCurrency().getCurrency()}')"
     }
 
     override fun inc(): Money = apply {
@@ -49,7 +49,7 @@ open class Money(
     }
 
     override fun multiply(other: StdMoney): Money {
-        val temp = this.value * other.getExchangedTo(this.getMoneyCurrency())
+        val temp = this.value * other.getExchangedTo(this.getCurrency())
         return Money(value = temp, currency = this.currency)
     }
 
@@ -66,7 +66,7 @@ open class Money(
     }
 
     override fun multiplyAssign(other: StdMoney): Money = apply {
-        this.value = this.value * other.getExchangedTo(this.getMoneyCurrency())
+        this.value = this.value * other.getExchangedTo(this.getCurrency())
     }
 
     companion object {
@@ -91,7 +91,7 @@ open class Money(
         }
 
         fun from(money: StdMoney): Money {
-            return create(value = money.getMoneyValue(), currency = money.getMoneyCurrency())
+            return create(value = money.getValue(), currency = money.getCurrency())
         }
     }
 }

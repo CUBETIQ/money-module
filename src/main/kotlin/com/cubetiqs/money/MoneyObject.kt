@@ -9,16 +9,16 @@ import java.util.*
  * @author sombochea
  */
 class MoneyObject(
-    var value: Double,
-    var currency: String,
+    private var value: Double,
+    private var currency: String,
     var operator: MoneyOperator? = null,
     var with: MoneyObject? = null,
 ) : StdMoney {
-    override fun getMoneyCurrency(): StdMoney.Currency {
+    override fun getCurrency(): StdMoney.Currency {
         return StdMoney.initCurrency(currency)
     }
 
-    override fun getMoneyValue(): Double {
+    override fun getValue(): Double {
         return value
     }
 
@@ -55,9 +55,9 @@ class MoneyObject(
                 else -> this plusWith next
             }
             // move the temp value that computed
-            this.value = temp.getMoneyValue()
+            this.value = temp.getValue()
             // move the currency into parent, if changed
-            this.currency = temp.getMoneyCurrency().getCurrency()
+            this.currency = temp.getCurrency().getCurrency()
             // move the first operator to previous next operator
             // example: first ops = +, then next ops = -, then inside next ops = *, n
             // return next: first ops = -, then next ops = *, then n
