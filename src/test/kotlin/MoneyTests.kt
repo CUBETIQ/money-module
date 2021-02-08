@@ -14,6 +14,14 @@ class MoneyTests {
         }
     }
 
+    object MyBatchRates {
+        fun getJsonRates(): String {
+            return """
+                {"USD": 1.0,"KHR": 4000.0, "eur": 0.5}
+            """.trimIndent()
+        }
+    }
+
     @Test
     fun exchange_2usd_to_khr_test() {
         initMoneyConfig()
@@ -45,14 +53,6 @@ class MoneyTests {
             ((moneyUsd + moneyKhr) * Money.TEN) exchangeTo MoneyCurrency.KHR minusWith (Money.ONE exchangeTo MoneyCurrency.KHR)
 
         Assert.assertEquals(156000.0, sum.getMoneyValue(), 0.0)
-    }
-
-    object MyBatchRates {
-        fun getJsonRates(): String {
-            return """
-                {"USD": 1.0,"KHR": 4000.0, "eur": 0.5}
-            """.trimIndent()
-        }
     }
 
     @Test
@@ -101,5 +101,38 @@ class MoneyTests {
         println(result)
 
         Assert.assertEquals(expected, result.getMoneyValue(), 0.0)
+    }
+
+    @Test
+    fun moneyGeneratorBuilderWithStringValues() {
+        initMoneyConfig()
+
+        val values = "usd:1:+,khr:4000:-,usd:1:+,eur:1:+" // result = 3
+        val expected1 = 3.0
+        val expected2 = 3.5
+
+        val builder = MoneyObject.builder()
+            .withCurrency("usd")
+            .with(1.0, "usd", '-')
+            .with(4000.0, "khr")
+            .with(1.0, "usd")
+            .with(1.0, "usd")
+            .with(1.0, "usd")
+            .with(1.0, "usd")
+            .with(1.0, "eur", '-') // 2 usd
+            .with(1.0, "usd")
+            .with(2.0, "usd", '/')
+            .with(2.0, "usd")
+            .build() // 3.5
+
+        val result1 = MoneyObject.builder()
+            .parseFromString(values)
+            .withCurrency("usd")
+            .build()
+            .compute()
+        val result2 = builder.compute()
+
+        Assert.assertEquals(expected1, result1.getMoneyValue(), 0.0)
+        Assert.assertEquals(expected2, result2.getMoneyValue(), 0.0)
     }
 }

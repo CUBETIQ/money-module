@@ -9,19 +9,11 @@ import java.util.*
  * @author sombochea
  */
 class MoneyObject(
-    val value: Double,
-    val currency: String,
+    var value: Double,
+    var currency: String,
     var operator: MoneyOperator? = null,
     var with: MoneyObject? = null,
 ) : StdMoney {
-    fun appendWith(with: MoneyObject?) {
-        if (this.with == null) {
-            this.with = with
-        } else {
-            this.with!!.appendWith(with)
-        }
-    }
-
     override fun getMoneyCurrency(): StdMoney.Currency {
         return StdMoney.initCurrency(currency)
     }
@@ -30,20 +22,51 @@ class MoneyObject(
         return value
     }
 
-    private fun generate(): StdMoney {
-        if (this.with != null) {
-            val withGenerated = this.with!!.generate()
-            return when (operator) {
-                MoneyOperator.PLUS -> this plusWith withGenerated
-                MoneyOperator.MINUS -> this minusWith withGenerated
-                MoneyOperator.DIVIDE -> this divideWith withGenerated
-                MoneyOperator.MULTIPLY -> this multiplyWith withGenerated
-                // if operator is null or empty with default Plus operator
-                else -> this plusWith withGenerated
-            }
+    fun appendWithNext(with: MoneyObject?) {
+        if (with == null) {
+            return
         }
 
-        return StdMoney.initMoney(value, currency = StdMoney.initCurrency(currency))
+        if (this.with == null) {
+            this.with = with
+        } else {
+            this.with!!.appendWithNext(with)
+        }
+    }
+
+    /**
+     * Internal Generate the value by next compute (First and next)
+     *
+     * Example: we have 3 items => [10, 20, 50]
+     * We want to sum of them => [10 + 20] => [30 + 50] => 80
+     */
+    private fun generate(): StdMoney {
+        // get next record for compute with
+        var next = this.with
+        // get first operator
+        var operatorFirst = this.operator
+        while (next != null) {
+            val temp = when (operatorFirst) {
+                MoneyOperator.PLUS -> this plusWith next
+                MoneyOperator.MINUS -> this minusWith next
+                MoneyOperator.DIVIDE -> this divideWith next
+                MoneyOperator.MULTIPLY -> this multiplyWith next
+                // if operator is null or empty with default Plus operator
+                else -> this plusWith next
+            }
+            // move the temp value that computed
+            this.value = temp.getMoneyValue()
+            // move the currency into parent, if changed
+            this.currency = temp.getMoneyCurrency().getCurrency()
+            // move the first operator to previous next operator
+            // example: first ops = +, then next ops = -, then inside next ops = *, n
+            // return next: first ops = -, then next ops = *, then n
+            operatorFirst = next.operator
+            // move next element
+            next = next.with
+        }
+
+        return this
     }
 
     fun compute(): StdMoney {
@@ -68,32 +91,46 @@ class MoneyObject(
         MULTIPLY;
 
         companion object {
-            fun operator(value: Char?): MoneyOperator {
+            fun operator(value: Any?, defaultOperator: MoneyOperator? = null): MoneyOperator {
                 return try {
-                    when (value!!) {
-                        '+' -> PLUS
-                        '-' -> MINUS
-                        '/' -> DIVIDE
-                        '*' -> MULTIPLY
-                        else -> throw IllegalArgumentException("operator not found with value: $value!")
+                    when (val temp = value!!) {
+                        is String -> {
+                            if (temp.length == 1) {
+                                operator(temp[0])
+                            } else {
+                                valueOf(temp.toUpperCase().trim())
+                            }
+                        }
+                        is Char -> {
+                            when (temp) {
+                                '+' -> PLUS
+                                '-' -> MINUS
+                                '/' -> DIVIDE
+                                '*' -> MULTIPLY
+                                else -> throw IllegalArgumentException("operator not found with value: $temp!")
+                            }
+                        }
+                        else -> throw IllegalArgumentException("operator not found by value: $value!")
                     }
                 } catch (ex: Exception) {
-                    throw IllegalArgumentException("operator not found!")
+                    defaultOperator ?: throw IllegalArgumentException("operator not found!")
                 }
             }
         }
     }
 
-    class MoneyGeneratorBuilder {
+    class MoneyObjectBuilder {
+        private val defaultCurrency = MoneyCurrency.USD.getCurrency()
+
         private var currency: String? = null
-        private val withs: MutableCollection<MoneyObject> = LinkedList()
+        private val withs: Deque<MoneyObject> = ArrayDeque()
 
         fun withCurrency(currency: String) = apply {
             this.currency = currency
         }
 
-        fun with(`object`: MoneyObject) = apply {
-            this.withs.add(`object`)
+        fun with(value: MoneyObject) = apply {
+            this.withs.add(value)
         }
 
         fun with(value: Double, currency: String, operator: MoneyOperator = MoneyOperator.PLUS) = apply {
@@ -112,21 +149,36 @@ class MoneyObject(
             )
         }
 
+        /**
+         * Example: String format => usd:1:+,khr:4000.0:-,usd:1 => 1 + (4000 eh) - 1 = 1USD
+         */
+        fun parseFromString(valuesString: String) = apply {
+            val valueGroups = valuesString.split(",")
+            valueGroups.forEach { value ->
+                val tempValue = value.trim().split(":")
+                if (tempValue.isNotEmpty() && !tempValue.firstOrNull().isNullOrEmpty()) {
+                    this.with(
+                        tempValue.getOrNull(1)?.toDoubleOrNull() ?: 0.0,
+                        tempValue.firstOrNull() ?: defaultCurrency,
+                        MoneyOperator.operator(tempValue.getOrNull(2), MoneyOperator.PLUS),
+                    )
+                }
+            }
+        }
+
         fun build(): MoneyObject {
-            val first: MoneyObject
-            if (this.currency.isNullOrEmpty() && withs.isNotEmpty()) {
-                first = withs.first()
-                withs.remove(first)
+            val first: MoneyObject = if (this.currency.isNullOrEmpty() && withs.isNotEmpty()) {
+                withs.removeFirst()
             } else {
-                first = MoneyObject(
+                MoneyObject(
                     value = 0.0,
+                    currency = this.currency ?: defaultCurrency,
                     operator = MoneyOperator.PLUS,
-                    currency = this.currency ?: MoneyCurrency.USD.getCurrency()
                 )
             }
 
-            withs.forEach { with ->
-                first.appendWith(with)
+            while (withs.isNotEmpty()) {
+                first.appendWithNext(withs.pop())
             }
 
             return first
@@ -138,6 +190,6 @@ class MoneyObject(
     }
 
     companion object {
-        fun builder() = MoneyGeneratorBuilder()
+        fun builder() = MoneyObjectBuilder()
     }
 }
