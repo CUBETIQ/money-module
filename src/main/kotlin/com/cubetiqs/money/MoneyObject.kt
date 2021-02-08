@@ -11,7 +11,11 @@ import java.util.*
 class MoneyObject(
     private var value: Double,
     private var currency: String,
+
+    // operator, used with "with" below
+    // example: if we have next we will use this operator to compute the value with
     var operator: MoneyOperator? = null,
+    // the value to compute with current object
     var with: MoneyObject? = null,
 ) : StdMoney {
     override fun getCurrency(): StdMoney.Currency {
