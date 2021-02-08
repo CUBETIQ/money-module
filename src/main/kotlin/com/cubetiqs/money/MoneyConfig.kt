@@ -26,7 +26,7 @@ object MoneyConfig {
      */
     private var properties: MoneyConfigProperties? = null
 
-    val propertiesBuilder = MoneyConfigProperties.MoneyConfigPropertiesBuilder()
+    private val propertiesBuilder = MoneyConfigProperties.MoneyConfigPropertiesBuilder()
 
     private fun getProperties(): MoneyConfigProperties {
         return properties ?: propertiesBuilder.build()
@@ -43,14 +43,16 @@ object MoneyConfig {
      * Value is money's value (Double)
      */
     fun parse(config: String, clearAllStates: Boolean = true) {
+        // remove all states, if needed
         if (clearAllStates) {
             MoneyConfig.config.clear()
         }
+
         val rates = config.split(getProperties().deliSplit)
         rates.map { i ->
             val temp = i.split(getProperties().deliEqual)
             if (temp.size == 2) {
-                val currency = temp[0].toUpperCase()
+                val currency = temp[0].toUpperCase().trim()
                 val value = temp[1].toDouble()
                 if (MoneyConfig.config.containsKey(currency)) {
                     MoneyConfig.config.replace(currency, value)
@@ -60,6 +62,15 @@ object MoneyConfig {
             } else {
                 throw MoneyCurrencyStateException("money config format is not valid!")
             }
+        }
+    }
+
+    fun appendRate(currency: String, rate: Double) = apply {
+        val currencyKey = currency.toUpperCase().trim()
+        if (config.containsKey(currencyKey)) {
+            config.replace(currencyKey, rate)
+        } else {
+            config[currencyKey] = rate
         }
     }
 
@@ -97,4 +108,6 @@ object MoneyConfig {
             }
         }
     }
+
+    fun builder() = MoneyConfigProperties.MoneyConfigPropertiesBuilder()
 }

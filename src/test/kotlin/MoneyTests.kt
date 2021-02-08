@@ -1,23 +1,28 @@
-import com.cubetiqs.money.Money
-import com.cubetiqs.money.MoneyConfig
-import com.cubetiqs.money.MoneyCurrency
-import com.cubetiqs.money.MoneyExchangeUtils
+import com.cubetiqs.money.*
 import org.junit.Assert
 import org.junit.Test
 
 class MoneyTests {
     @Test
     fun exchange_2usd_to_khr_test() {
-        val properties = MoneyConfig
-            .MoneyConfigProperties
-            .MoneyConfigPropertiesBuilder()
-            .setDeliEqual(':')
-            .setDeliSplit(',')
-            .build()
+//        val properties = MoneyConfig
+//            .MoneyConfigProperties
+//            .MoneyConfigPropertiesBuilder()
+//            .setDeliEqual(':')
+//            .setDeliSplit(',')
+//            .build()
 
-        MoneyConfig
-            .setProperties(properties)
-            .parse("USD:1,KHR:4000")
+        val properties = buildMoneyConfigProperties {
+            setDeliEqual(':')
+            setDeliSplit(',')
+        }
+
+        applyMoneyConfig {
+            setProperties(properties)
+            // parse("USD:1,KHR:4000")
+            appendRate("usd", 1.0)
+            appendRate("khr", 4000.0)
+        }
 
         // Is valid for money config?
         Assert.assertTrue(MoneyConfig.isValid())
