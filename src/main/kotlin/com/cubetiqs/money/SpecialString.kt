@@ -1,4 +1,4 @@
-package com.cubetiqs.libra.moneyutils
+package com.cubetiqs.money
 
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

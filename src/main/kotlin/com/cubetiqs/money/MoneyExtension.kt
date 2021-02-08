@@ -1,4 +1,4 @@
-package com.cubetiqs.libra.moneyutils
+package com.cubetiqs.money
 
 fun StdMoney.exchangeTo(currency: String): StdMoney {
     return MoneyExchangeUtils.exchange(this, currency)

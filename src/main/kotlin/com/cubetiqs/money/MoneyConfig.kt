@@ -1,4 +1,4 @@
-package com.cubetiqs.libra.moneyutils
+package com.cubetiqs.money
 
 /**
  * Default money config in static object.
@@ -18,7 +18,7 @@ object MoneyConfig {
 
     // validate the config, if have it's valid
     fun isValid(): Boolean {
-        return this.config.isNotEmpty()
+        return config.isNotEmpty()
     }
 
     /**
@@ -33,7 +33,7 @@ object MoneyConfig {
     }
 
     fun setProperties(properties: MoneyConfigProperties): MoneyConfig {
-        this.properties = properties
+        MoneyConfig.properties = properties
         return MoneyConfig
     }
 
@@ -44,7 +44,7 @@ object MoneyConfig {
      */
     fun parse(config: String, clearAllStates: Boolean = true) {
         if (clearAllStates) {
-            this.config.clear()
+            MoneyConfig.config.clear()
         }
         val rates = config.split(getProperties().deliSplit)
         rates.map { i ->
@@ -52,10 +52,10 @@ object MoneyConfig {
             if (temp.size == 2) {
                 val currency = temp[0].toUpperCase()
                 val value = temp[1].toDouble()
-                if (this.config.containsKey(currency)) {
-                    this.config.replace(currency, value)
+                if (MoneyConfig.config.containsKey(currency)) {
+                    MoneyConfig.config.replace(currency, value)
                 } else {
-                    this.config.put(currency, value)
+                    MoneyConfig.config.put(currency, value)
                 }
             } else {
                 throw MoneyCurrencyStateException("money config format is not valid!")
@@ -64,7 +64,7 @@ object MoneyConfig {
     }
 
     // all currencies with its rate
-    fun getConfig() = this.config
+    fun getConfig() = config
 
     @Throws(MoneyCurrencyStateException::class)
     fun getRate(currency: String): Double {

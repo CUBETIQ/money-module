@@ -1,4 +1,4 @@
-package com.cubetiqs.libra.moneyutils
+package com.cubetiqs.money
 
 import java.lang.reflect.Field
 

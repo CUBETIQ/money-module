@@ -1,4 +1,4 @@
-package com.cubetiqs.libra.moneyutils
+package com.cubetiqs.money
 
 operator fun StdMoney.unaryMinus() = (-getMoneyValue())
 operator fun StdMoney.unaryPlus() = (+getMoneyValue())

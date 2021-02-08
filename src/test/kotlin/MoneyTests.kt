@@ -1,8 +1,8 @@
-import com.cubetiqs.libra.moneyutils.Money
-import com.cubetiqs.libra.moneyutils.MoneyConfig
-import com.cubetiqs.libra.moneyutils.MoneyCurrency
-import com.cubetiqs.libra.moneyutils.MoneyExchangeUtils
-import com.cubetiqs.libra.moneyutils.SpecialStringProcessor
+import com.cubetiqs.money.Money
+import com.cubetiqs.money.MoneyConfig
+import com.cubetiqs.money.MoneyCurrency
+import com.cubetiqs.money.MoneyExchangeUtils
+import com.cubetiqs.money.SpecialStringProcessor
 import org.junit.Assert
 import org.junit.Test
 
