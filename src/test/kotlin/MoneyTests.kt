@@ -135,4 +135,9 @@ class MoneyTests {
         Assert.assertEquals(expected1, result1.getValue(), 0.0)
         Assert.assertEquals(expected2, result2.getValue(), 0.0)
     }
+
+    @Test
+    fun moneyFormatterTest() {
+
+    }
 }

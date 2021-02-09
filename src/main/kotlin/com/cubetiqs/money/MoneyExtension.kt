@@ -73,7 +73,7 @@ infix fun Number.withCurrency(currency: String): StdMoney = this withCurrency ob
 
 // toString function for StdMoney interface
 fun StdMoney.asString(): String = "StdMoney(value=${getValue()}, currency=${getCurrency().getCurrency()})"
-fun StdMoney.asMoneyString(): String = "${getValue()}:${getCurrency().getCurrency()}"
+fun StdMoney.asMoneyString(deli: Char? = ':'): String = "${getValue()}${deli ?: ':'}${getCurrency().getCurrency()}"
 fun String?.fromStringToMoney(): StdMoney {
     val values = this?.split(":")
     if (values.isNullOrEmpty()) {
@@ -110,16 +110,20 @@ fun StdMoney.tryToCastToMixin(): MoneyMixin {
     }
 }
 
-inline fun buildMoneyConfigProperties(
-    builderAction: MoneyConfig.MoneyConfigProperties.MoneyConfigPropertiesBuilder.() -> Unit
-): MoneyConfig.MoneyConfigProperties {
-    return MoneyConfig
-        .builder().apply(builderAction)
-        .build()
+// transfer std money to money view
+fun StdMoney.asMoneyView(): MoneyView {
+    return MoneyView(this)
 }
 
-inline fun applyMoneyConfig(
-    builderAction: MoneyConfig.() -> Unit,
-) {
-    MoneyConfig.apply(builderAction)
+// transfer money view to std money
+fun MoneyView.asStdMoney(): StdMoney {
+    return object : StdMoney {
+        override fun getCurrency(): StdMoney.Currency {
+            return StdMoney.initCurrency(this@asStdMoney.getCurrency())
+        }
+
+        override fun getValue(): Double {
+            return this@asStdMoney.getValue()
+        }
+    }
 }

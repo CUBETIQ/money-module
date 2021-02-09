@@ -16,6 +16,16 @@ object MoneyConfig {
      */
     private val config: MutableMap<String, Double> = mutableMapOf()
 
+    // use to format the money for each value, if have
+    private val configFormatter: MutableMap<String, MoneyFormatProvider> = mutableMapOf()
+
+    // use to identified for config dataset with prefix mode
+    private var configPrefix: String = ""
+    // use to fallback, if the currency not found
+    // if the fallback greater than ZERO, then called it
+    // else throws
+    private var fallbackRate: Double = 0.0
+
     // validate the config, if have it's valid
     fun isValid(): Boolean {
         return config.isNotEmpty()
@@ -37,6 +47,24 @@ object MoneyConfig {
         return MoneyConfig
     }
 
+    fun setConfigPrefix(prefix: String): MoneyConfig {
+        configPrefix = prefix
+        return MoneyConfig
+    }
+
+    fun setFallbackRate(fallbackRate: Double) = apply {
+        this.fallbackRate = fallbackRate
+    }
+
+    // get custom config key within currency generally
+    // example: myOwned_usd
+    private fun getConfigKey(key: String): String {
+        if (configPrefix.isEmpty() || configPrefix.isBlank()) {
+            return key
+        }
+        return "${configPrefix}_$key"
+    }
+
     /**
      * Parse the config string to currency's map within rates
      * Key is money's currency (String)
@@ -47,7 +75,14 @@ object MoneyConfig {
     fun parse(config: String, clearAllStates: Boolean = true) {
         // remove all states, if needed
         if (clearAllStates) {
-            MoneyConfig.config.clear()
+            if (configPrefix.isEmpty() || config.isBlank()) {
+                MoneyConfig.config.clear()
+            } else {
+                val keys = MoneyConfig.config.filter { it.key.startsWith(prefix = configPrefix) }.keys
+                keys.forEach { key ->
+                    MoneyConfig.config.remove(key)
+                }
+            }
         }
 
         val rates = config.split(getProperties().deliSplit)
@@ -60,11 +95,14 @@ object MoneyConfig {
                 val currency = temp[0]
                     .toUpperCase()
                     .trim()
+                val key = getConfigKey(currency)
                 val value = temp[1].toDouble()
-                if (MoneyConfig.config.containsKey(currency)) {
-                    MoneyConfig.config.replace(currency, value)
+
+                // set the value into dataset
+                if (MoneyConfig.config.containsKey(key)) {
+                    MoneyConfig.config.replace(key, value)
                 } else {
-                    MoneyConfig.config.put(currency, value)
+                    MoneyConfig.config.put(key, value)
                 }
             } else {
                 throw MoneyCurrencyStateException("money config format $temp is not valid!")
@@ -72,15 +110,20 @@ object MoneyConfig {
         }
     }
 
+    // append the rate into dataset
+    // for config key are completed change inside
     fun appendRate(currency: String, rate: Double) = apply {
         val currencyKey = currency.toUpperCase().trim()
-        if (config.containsKey(currencyKey)) {
-            config.replace(currencyKey, rate)
+        val key = getConfigKey(currencyKey)
+        if (config.containsKey(key)) {
+            config.replace(key, rate)
         } else {
-            config[currencyKey] = rate
+            config[key] = rate
         }
     }
 
+    // append the rate via provider
+    // no need to change currency prefix
     fun appendRate(provider: MoneyExchangeProvider) = apply {
         val currency = provider.getCurrency()
         val rate = provider.getRate()
@@ -109,8 +152,43 @@ object MoneyConfig {
 
     @Throws(MoneyCurrencyStateException::class)
     fun getRate(currency: StdMoney.Currency): Double {
-        return getConfig()[currency.getCurrency().toUpperCase().trim()]
-            ?: throw MoneyCurrencyStateException("money currency ${currency.getCurrency()} is not valid!")
+        return getConfig()[getConfigKey(currency.getCurrency().toUpperCase().trim())]
+            ?: if (fallbackRate > 0) fallbackRate else throw MoneyCurrencyStateException("money currency ${currency.getCurrency()} is not valid!")
+    }
+
+    // apply default formatter for all not exists
+    fun applyDefaultFormatter(
+        provider: MoneyFormatProvider? = null
+    ) = apply {
+        configFormatter[MoneyFormatter.DEFAULT_FORMATTER] = buildMoneyFormatter {
+            setProvider(provider)
+        }
+    }
+
+    // add money formatter by currency of each money value
+    fun addFormatter(currency: String, formatter: MoneyFormatProvider) = apply {
+        val key = getConfigKey(currency.toUpperCase().trim())
+        if (configFormatter.containsKey(key)) {
+            configFormatter.replace(key, formatter)
+        } else {
+            configFormatter[key] = formatter
+        }
+    }
+
+    // get formatter by currency or default
+    fun getFormatter(currency: String? = null): MoneyFormatter {
+        // apply default formatter
+        val formatter = (if (!currency.isNullOrEmpty()) {
+            val key = getConfigKey(currency.toUpperCase().trim())
+            configFormatter[key]
+        } else {
+            null
+        }) ?: configFormatter[MoneyFormatter.DEFAULT_FORMATTER]
+
+        return when (formatter) {
+            is MoneyFormatter -> formatter
+            else -> buildMoneyFormatter { setProvider(provider = formatter) }
+        }
     }
 
     class MoneyConfigProperties(
