@@ -7,7 +7,7 @@ package com.cubetiqs.money
  * @author sombochea
  * @since 1.0
  */
-interface StdMoney {
+interface StdMoney : MoneyMixin {
     /**
      * Get money's value from current state.
      *
@@ -27,6 +27,10 @@ interface StdMoney {
      */
     interface Currency {
         fun getCurrency(): String
+
+        fun isEquals(other: Currency): Boolean {
+            return this.getCurrency().equals(other.getCurrency(), ignoreCase = true)
+        }
     }
 
     interface ExchangeOperator {

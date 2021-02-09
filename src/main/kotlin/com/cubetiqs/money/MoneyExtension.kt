@@ -94,8 +94,21 @@ fun String?.fromStringToMoney(): StdMoney {
     }
 }
 
-fun StdMoney.isMatchedCurrency(currency: StdMoney.Currency) =
-    this.getCurrency().getCurrency().equals(currency.getCurrency(), ignoreCase = true)
+// check the money currency
+fun StdMoney.isMatchedCurrency(currency: StdMoney.Currency) = this.getCurrency().isEquals(currency)
+
+// transfer to any money mixin
+fun StdMoney.tryToCastToMixin(): MoneyMixin {
+    return object : MoneyMixin {
+        fun getValue(): Double {
+            return this@tryToCastToMixin.getValue()
+        }
+
+        fun getCurrency(): String {
+            return this@tryToCastToMixin.getCurrency().getCurrency()
+        }
+    }
+}
 
 inline fun buildMoneyConfigProperties(
     builderAction: MoneyConfig.MoneyConfigProperties.MoneyConfigPropertiesBuilder.() -> Unit

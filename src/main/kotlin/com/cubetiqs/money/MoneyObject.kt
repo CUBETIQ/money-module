@@ -8,15 +8,15 @@ import java.util.*
  * @since 1.0
  * @author sombochea
  */
-class MoneyObject(
+open class MoneyObject(
     private var value: Double,
     private var currency: String,
 
     // operator, used with "with" below
     // example: if we have next we will use this operator to compute the value with
-    var operator: MoneyOperator? = null,
+    private var operator: MoneyOperator? = null,
     // the value to compute with current object
-    var with: MoneyObject? = null,
+    private var with: MoneyObject? = null,
 ) : StdMoney {
     override fun getCurrency(): StdMoney.Currency {
         return StdMoney.initCurrency(currency)
@@ -25,6 +25,9 @@ class MoneyObject(
     override fun getValue(): Double {
         return value
     }
+
+    open fun getOperator(): MoneyOperator? = operator
+    open fun getWith(): MoneyObject? = with
 
     fun appendWithNext(with: MoneyObject?) {
         if (with == null) {
