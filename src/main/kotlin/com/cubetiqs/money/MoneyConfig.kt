@@ -41,6 +41,8 @@ object MoneyConfig {
      * Parse the config string to currency's map within rates
      * Key is money's currency (String)
      * Value is money's value (Double)
+     *
+     * Example for config rules: usd:1,khr:4000
      */
     fun parse(config: String, clearAllStates: Boolean = true) {
         // remove all states, if needed
