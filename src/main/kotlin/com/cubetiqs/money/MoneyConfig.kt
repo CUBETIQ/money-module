@@ -1,5 +1,8 @@
 package com.cubetiqs.money
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+
 /**
  * Default money config in static object.
  * Sample parse format: USD=1,KHR=4000,EUR=0.99
@@ -14,10 +17,10 @@ object MoneyConfig {
      * Key is the currency
      * Value is the rate
      */
-    private val config: MutableMap<String, Double> = mutableMapOf()
+    private val config: ConcurrentMap<String, Double> = ConcurrentHashMap()
 
     // use to format the money for each value, if have
-    private val configFormatter: MutableMap<String, MoneyFormatProvider> = mutableMapOf()
+    private val configFormatter: ConcurrentMap<String, MoneyFormatProvider> = ConcurrentHashMap()
 
     // use to identified for config dataset with prefix mode
     private var configPrefix: String = ""
