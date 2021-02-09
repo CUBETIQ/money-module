@@ -4,9 +4,12 @@ open class MoneyView(
     private var value: Number? = null,
     private var currency: String? = null,
 ) : MoneyMixin {
+    private var _currency: StdMoney.Currency? = null
+
     constructor(money: StdMoney) : this() {
+        this._currency = money.getCurrency()
         this.value = money.getValue()
-        this.currency = money.getCurrency().getCurrency()
+        this.currency = this._currency?.getCurrency()
     }
 
     fun getValue(): Double {
@@ -15,6 +18,10 @@ open class MoneyView(
 
     fun getCurrency(): String? {
         return currency
+    }
+
+    fun getSymbol(): String? {
+        return this._currency?.findCurrency()?.symbol
     }
 
     fun getFormat(): String {

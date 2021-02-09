@@ -1,5 +1,7 @@
 package com.cubetiqs.money
 
+import java.util.*
+
 infix fun StdMoney.exchangeTo(currency: StdMoney.Currency): StdMoney {
     return MoneyExchangeUtils.exchange(this, currency)
 }
@@ -126,4 +128,9 @@ fun MoneyView.asStdMoney(): StdMoney {
             return this@asStdMoney.getValue()
         }
     }
+}
+
+// detect currency symbol, if needed
+fun StdMoney.Currency.findCurrency(): Currency? {
+    return Currency.getInstance(this.getCurrency())
 }
