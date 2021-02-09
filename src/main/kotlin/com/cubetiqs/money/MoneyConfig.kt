@@ -1,5 +1,6 @@
 package com.cubetiqs.money
 
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -11,27 +12,58 @@ import java.util.concurrent.ConcurrentMap
  * @since 1.0
  */
 object MoneyConfig {
+    private const val CONFIG_INITIAL_SIZE = 10
+    private const val CONFIG_FORMATTER_INITIAL_SIZE = 10
+    private const val LOCALES_INITIAL_SIZE = 5
+    private const val CURRENCIES_INITIAL_SIZE = 5
+
     /**
      * All money currencies and its rate are stored in memory state for exchange or compute the value.
      *
      * Key is the currency
      * Value is the rate
      */
-    private val config: ConcurrentMap<String, Double> = ConcurrentHashMap()
+    private val configRates: ConcurrentMap<String, Double> = ConcurrentHashMap(CONFIG_INITIAL_SIZE)
 
     // use to format the money for each value, if have
-    private val configFormatter: ConcurrentMap<String, MoneyFormatProvider> = ConcurrentHashMap()
+    private val configFormatter: ConcurrentMap<String, MoneyFormatProvider> =
+        ConcurrentHashMap(CONFIG_FORMATTER_INITIAL_SIZE)
+
+    // use to custom locales and allow to detect auto formatter, if enable auto locale format
+    private val configLocales: ConcurrentMap<String, Locale> = ConcurrentHashMap(LOCALES_INITIAL_SIZE)
+
+    // use to custom currencies and allow to detect auto, when use auto detect for currencies translate
+    private val configCurrencies: ConcurrentMap<String, Currency> = ConcurrentHashMap(CURRENCIES_INITIAL_SIZE)
+
+    // use to auto format, when this true
+    // and formatter for money value, with current locale or custom set locale
+    private var autoLocaleFormatter: Boolean = false
+
+    // use to auto format, when this true
+    // and formatter for money value, with current currency or custom set currency
+    private var autoCurrencyFormatter: Boolean = false
 
     // use to identified for config dataset with prefix mode
     private var configPrefix: String = ""
+    private fun isConfigPrefixValid() = configPrefix.isNotEmpty() && configPrefix.isNotBlank()
+
     // use to fallback, if the currency not found
     // if the fallback greater than ZERO, then called it
     // else throws
     private var fallbackRate: Double = 0.0
 
-    // validate the config, if have it's valid
-    fun isValid(): Boolean {
-        return config.isNotEmpty()
+    fun getConfigs(): Map<String, Any?> {
+        return mapOf(
+            "configRates" to configRates,
+            "configFormatter" to configFormatter,
+            "configLocales" to configLocales,
+            "configCurrencies" to configCurrencies,
+        )
+    }
+
+    // validate the config rates, if have it's valid
+    fun isConfigRatesValid(): Boolean {
+        return configRates.isNotEmpty()
     }
 
     /**
@@ -59,6 +91,17 @@ object MoneyConfig {
         this.fallbackRate = fallbackRate
     }
 
+    fun setAutoLocaleFormatter(enabled: Boolean) = apply {
+        this.autoLocaleFormatter = enabled
+    }
+
+    fun setAutoCurrencyFormatter(enabled: Boolean) = apply {
+        this.autoCurrencyFormatter = enabled
+    }
+
+    fun isAutoLocaleFormatterEnabled() = this.autoLocaleFormatter
+    fun isAutoCurrencyFormatterEnabled() = this.autoCurrencyFormatter
+
     // get custom config key within currency generally
     // example: myOwned_usd
     private fun getConfigKey(key: String): String {
@@ -78,12 +121,12 @@ object MoneyConfig {
     fun parse(config: String, clearAllStates: Boolean = true) {
         // remove all states, if needed
         if (clearAllStates) {
-            if (configPrefix.isEmpty() || config.isBlank()) {
-                MoneyConfig.config.clear()
+            if (!isConfigPrefixValid()) {
+                configRates.clear()
             } else {
-                val keys = MoneyConfig.config.filter { it.key.startsWith(prefix = configPrefix) }.keys
+                val keys = configRates.filter { it.key.startsWith(prefix = configPrefix) }.keys
                 keys.forEach { key ->
-                    MoneyConfig.config.remove(key)
+                    configRates.remove(key)
                 }
             }
         }
@@ -102,10 +145,10 @@ object MoneyConfig {
                 val value = temp[1].toDouble()
 
                 // set the value into dataset
-                if (MoneyConfig.config.containsKey(key)) {
-                    MoneyConfig.config.replace(key, value)
+                if (configRates.containsKey(key)) {
+                    configRates.replace(key, value)
                 } else {
-                    MoneyConfig.config.put(key, value)
+                    configRates.put(key, value)
                 }
             } else {
                 throw MoneyCurrencyStateException("money config format $temp is not valid!")
@@ -118,10 +161,10 @@ object MoneyConfig {
     fun appendRate(currency: String, rate: Double) = apply {
         val currencyKey = currency.toUpperCase().trim()
         val key = getConfigKey(currencyKey)
-        if (config.containsKey(key)) {
-            config.replace(key, rate)
+        if (configRates.containsKey(key)) {
+            configRates.replace(key, rate)
         } else {
-            config[key] = rate
+            configRates[key] = rate
         }
     }
 
@@ -151,12 +194,79 @@ object MoneyConfig {
     }
 
     // all currencies with its rate
-    fun getConfig() = config
+    fun getConfigRates() = configRates
 
     @Throws(MoneyCurrencyStateException::class)
     fun getRate(currency: StdMoney.Currency): Double {
-        return getConfig()[getConfigKey(currency.getCurrency().toUpperCase().trim())]
+        return getConfigRates()[getConfigKey(currency.getCurrency().toUpperCase().trim())]
             ?: if (fallbackRate > 0) fallbackRate else throw MoneyCurrencyStateException("money currency ${currency.getCurrency()} is not valid!")
+    }
+
+    // apply custom locale below
+    fun applyDefaultLocale(locale: Locale = Locale.getDefault()) = apply {
+        configLocales[MoneyFormatter.DEFAULT_LOCALE] = locale
+    }
+
+    // get default locale from system or user defined
+    private fun getDefaultLocale(): Locale {
+        return configLocales[MoneyFormatter.DEFAULT_LOCALE] ?: Locale.getDefault()
+    }
+
+    // add custom locale
+    fun applyLocale(locale: Locale) = apply {
+        if (isConfigPrefixValid()) {
+            if (configLocales.containsKey(configPrefix)) {
+                configLocales.replace(configPrefix, locale)
+            } else {
+                configLocales[configPrefix] = locale
+            }
+        }
+    }
+
+    // get locale by config prefix or default if not found
+    fun getLocale(): Locale {
+        if (isConfigPrefixValid() && configLocales.containsKey(configPrefix)) {
+            return configLocales[configPrefix] ?: getDefaultLocale()
+        }
+
+        return getDefaultLocale()
+    }
+
+    // get default currency from system or user defined
+    private fun getDefaultCurrency(): Currency {
+        return configCurrencies[MoneyFormatter.DEFAULT_CURRENCY] ?: Currency.getInstance(getDefaultLocale())
+    }
+
+    // apply the default currency for system at runtime
+    fun applyDefaultCurrency(currency: StdMoney.Currency) = apply {
+        configCurrencies[MoneyFormatter.DEFAULT_CURRENCY] = currency.findCurrency()
+    }
+
+    // apply the currency into the config for system currency at runtime
+    fun applyCurrency(currency: StdMoney.Currency) = apply {
+        if (isConfigPrefixValid()) {
+            val systemCurrency = currency.findCurrency()
+            if (systemCurrency != null) {
+                if (configCurrencies.containsKey(configPrefix)) {
+                    configCurrencies.replace(configPrefix, systemCurrency)
+                } else {
+                    configCurrencies[configPrefix] = systemCurrency
+                }
+            }
+        }
+    }
+
+    // get currency by config prefix or default if not found
+    fun getCurrency(): Currency {
+        if (isConfigPrefixValid() && configCurrencies.containsKey(configPrefix)) {
+            return configCurrencies[configPrefix] ?: getDefaultCurrency()
+        }
+
+        return getDefaultCurrency()
+    }
+
+    fun getCurrencySymbol(): String {
+        return getCurrency().getSymbol(getDefaultLocale())
     }
 
     // apply default formatter for all not exists

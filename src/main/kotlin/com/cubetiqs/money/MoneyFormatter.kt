@@ -2,6 +2,8 @@ package com.cubetiqs.money
 
 import java.io.Serializable
 import java.math.RoundingMode
+import java.text.NumberFormat
+import javax.swing.text.NumberFormatter
 
 /**
  * Money Formatter (Final class)
@@ -40,6 +42,20 @@ class MoneyFormatter(
     override fun format(): String {
         value?.getValue() ?: return ""
 
+        if (MoneyConfig.isAutoLocaleFormatterEnabled()) {
+            val systemCurrency = if (MoneyConfig.isAutoCurrencyFormatterEnabled()) {
+                MoneyConfig.getCurrency()
+            } else {
+                value?.getCurrency()?.findCurrency()
+            }
+
+            if (systemCurrency != null) {
+                val numberFormatter = NumberFormat.getNumberInstance(MoneyConfig.getLocale())
+                numberFormatter.currency = systemCurrency
+                return numberFormatter.format(value?.getValue())
+            }
+        }
+
         if (getPattern() == null && getPrecision() < 0 && getRoundingMode() == null) {
             return value?.getValue().toString()
         }
@@ -57,5 +73,7 @@ class MoneyFormatter(
 
     companion object {
         const val DEFAULT_FORMATTER = "defaultFormatter"
+        const val DEFAULT_LOCALE = "defaultLocale"
+        const val DEFAULT_CURRENCY = "defaultCurrency"
     }
 }

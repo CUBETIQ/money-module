@@ -1,6 +1,7 @@
 import com.cubetiqs.money.*
 import org.junit.Assert
 import org.junit.Test
+import java.util.*
 
 class MoneyTests {
     private fun initMoneyConfig() {
@@ -38,7 +39,7 @@ class MoneyTests {
 //        }
 
         // Is valid for money config?
-        Assert.assertTrue(MoneyConfig.isValid())
+        Assert.assertTrue(MoneyConfig.isConfigRatesValid())
 
         // arithmetic operators calculation
         val moneyUsd =
@@ -138,6 +139,7 @@ class MoneyTests {
 
     @Test
     fun moneyFormatterTest() {
-
+        val systemCurrency = Currency.getInstance("USD").symbol
+        println(systemCurrency)
     }
 }

@@ -13,7 +13,7 @@ open class MoneyView(
     }
 
     fun getValue(): Double {
-        return value?.toDouble() ?: 0.0
+        return (value?.toDouble() ?: 0.0)
     }
 
     fun getCurrency(): String? {
