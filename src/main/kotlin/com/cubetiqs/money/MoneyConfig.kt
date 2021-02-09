@@ -1,5 +1,6 @@
 package com.cubetiqs.money
 
+import java.lang.Exception
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -12,10 +13,11 @@ import java.util.concurrent.ConcurrentMap
  * @since 1.0
  */
 object MoneyConfig {
-    private const val CONFIG_INITIAL_SIZE = 10
+    private const val CONFIG_RATE_INITIAL_SIZE = 10
     private const val CONFIG_FORMATTER_INITIAL_SIZE = 10
     private const val LOCALES_INITIAL_SIZE = 5
     private const val CURRENCIES_INITIAL_SIZE = 5
+    private const val CONFIG_INITIAL_SIZE = 50
 
     /**
      * All money currencies and its rate are stored in memory state for exchange or compute the value.
@@ -23,7 +25,7 @@ object MoneyConfig {
      * Key is the currency
      * Value is the rate
      */
-    private val configRates: ConcurrentMap<String, Double> = ConcurrentHashMap(CONFIG_INITIAL_SIZE)
+    private val configRates: ConcurrentMap<String, Double> = ConcurrentHashMap(CONFIG_RATE_INITIAL_SIZE)
 
     // use to format the money for each value, if have
     private val configFormatter: ConcurrentMap<String, MoneyFormatProvider> =
@@ -35,13 +37,27 @@ object MoneyConfig {
     // use to custom currencies and allow to detect auto, when use auto detect for currencies translate
     private val configCurrencies: ConcurrentMap<String, Currency> = ConcurrentHashMap(CURRENCIES_INITIAL_SIZE)
 
-    // use to auto format, when this true
-    // and formatter for money value, with current locale or custom set locale
-    private var autoLocaleFormatter: Boolean = false
+    // allow to use config of any states
+    private val configs: ConcurrentMap<String, Any?> = ConcurrentHashMap(CONFIG_INITIAL_SIZE)
 
-    // use to auto format, when this true
-    // and formatter for money value, with current currency or custom set currency
-    private var autoCurrencyFormatter: Boolean = false
+    // allow to set the value into custom config
+    fun setConfig(key: String, value: Any?) = apply {
+        if (configs.containsKey(key)) {
+            configs.replace(key, value)
+        } else {
+            this.configs[key] = value
+        }
+    }
+
+    // allow to get the value from custom config
+    fun <T> getConfigOrDefault(key: String, defaultValue: T? = null): T? {
+        return (try {
+            @Suppress("UNCHECKED_CAST")
+            configs[key] as? T
+        } catch (ex: Exception) {
+            null
+        }) ?: defaultValue
+    }
 
     // use to identified for config dataset with prefix mode
     private var configPrefix: String = ""
@@ -58,6 +74,7 @@ object MoneyConfig {
             "configFormatter" to configFormatter,
             "configLocales" to configLocales,
             "configCurrencies" to configCurrencies,
+            "configs" to configs,
         )
     }
 
@@ -92,15 +109,24 @@ object MoneyConfig {
     }
 
     fun setAutoLocaleFormatter(enabled: Boolean) = apply {
-        this.autoLocaleFormatter = enabled
+        setConfig(getConfigKey("autoLocaleFormatter"), enabled)
     }
 
     fun setAutoCurrencyFormatter(enabled: Boolean) = apply {
-        this.autoCurrencyFormatter = enabled
+        setConfig(getConfigKey("autoCurrencyFormatter"), enabled)
     }
 
-    fun isAutoLocaleFormatterEnabled() = this.autoLocaleFormatter
-    fun isAutoCurrencyFormatterEnabled() = this.autoCurrencyFormatter
+    // use to auto format, when this true
+    // and formatter for money value, with current locale or custom set locale
+    fun isAutoLocaleFormatterEnabled(): Boolean {
+        return getConfigOrDefault(getConfigKey("autoLocaleFormatter"), false) ?: false
+    }
+
+    // use to auto format, when this true
+    // and formatter for money value, with current currency or custom set currency
+    fun isAutoCurrencyFormatterEnabled(): Boolean {
+        return getConfigOrDefault(getConfigKey("autoCurrencyFormatter"), false) ?: false
+    }
 
     // get custom config key within currency generally
     // example: myOwned_usd

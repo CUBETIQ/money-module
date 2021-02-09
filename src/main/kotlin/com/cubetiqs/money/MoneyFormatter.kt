@@ -3,7 +3,6 @@ package com.cubetiqs.money
 import java.io.Serializable
 import java.math.RoundingMode
 import java.text.NumberFormat
-import javax.swing.text.NumberFormatter
 
 /**
  * Money Formatter (Final class)
@@ -27,6 +26,12 @@ class MoneyFormatter(
         }
     }
 
+    // allow to force the auto format from money config
+    private var disableAutoFormat: Boolean = true
+    fun setDisableAutoFormat(disabled: Boolean) = apply {
+        this.disableAutoFormat = disabled
+    }
+
     // when want to format the value for each of them, need to parse the money value here
     private var value: StdMoney? = null
     fun setValue(value: StdMoney?) = apply { this.value = value }
@@ -42,22 +47,24 @@ class MoneyFormatter(
     override fun format(): String {
         value?.getValue() ?: return ""
 
-        if (MoneyConfig.isAutoLocaleFormatterEnabled()) {
-            val systemCurrency = if (MoneyConfig.isAutoCurrencyFormatterEnabled()) {
-                MoneyConfig.getCurrency()
-            } else {
-                value?.getCurrency()?.findCurrency()
-            }
-
-            if (systemCurrency != null) {
-                val numberFormatter = NumberFormat.getNumberInstance(MoneyConfig.getLocale())
-                numberFormatter.currency = systemCurrency
-                return numberFormatter.format(value?.getValue())
-            }
+        var autoFormat = if (disableAutoFormat) {
+            null
+        } else {
+            autoFormatValueFromConfig(force = false)
         }
 
+        if (!autoFormat.isNullOrEmpty()) {
+            return autoFormat
+        }
+
+        // if don't have the pattern, precision and rounding, will able to use system auto format enabled
         if (getPattern() == null && getPrecision() < 0 && getRoundingMode() == null) {
-            return value?.getValue().toString()
+            autoFormat = autoFormatValueFromConfig(force = true)
+            return if (autoFormat.isNullOrEmpty()) {
+                value?.getValue().toString()
+            } else {
+                autoFormat
+            }
         }
 
         if (getPrecision() > -1) {
@@ -69,6 +76,27 @@ class MoneyFormatter(
 
     override fun toMoneyString(overrideSymbol: Char?): String {
         return value?.asMoneyString(overrideSymbol) ?: ""
+    }
+
+    private fun autoFormatValueFromConfig(force: Boolean): String? {
+        if (force || MoneyConfig.isAutoLocaleFormatterEnabled()) {
+            val systemCurrency = if (MoneyConfig.isAutoCurrencyFormatterEnabled()) {
+                MoneyConfig.getCurrency()
+            } else {
+                value?.getCurrency()?.findCurrency()
+            }
+
+            if (systemCurrency != null) {
+                val numberFormatter = NumberFormat.getNumberInstance(MoneyConfig.getLocale())
+                if (getRoundingMode() != null) {
+                    numberFormatter.roundingMode = getRoundingMode()
+                }
+                numberFormatter.currency = systemCurrency
+                return numberFormatter.format(value?.getValue())
+            }
+        }
+
+        return null
     }
 
     companion object {

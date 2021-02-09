@@ -6,7 +6,13 @@ open class MoneyView(
 ) : MoneyMixin {
     private var _currency: StdMoney.Currency? = null
 
-    constructor(money: StdMoney) : this() {
+    constructor(value: StdMoney) : this() {
+        val money = if (MoneyConfig.isAutoCurrencyFormatterEnabled()) {
+            value exchangeTo MoneyConfig.getCurrency().currencyCode
+        } else {
+            value
+        }
+
         this._currency = money.getCurrency()
         this.value = money.getValue()
         this.currency = this._currency?.getCurrency()
@@ -28,6 +34,7 @@ open class MoneyView(
         return MoneyConfig
             .getFormatter(getCurrency())
             .setValue(this.asStdMoney())
+            .setDisableAutoFormat(true)
             .format()
     }
 }
