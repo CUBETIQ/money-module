@@ -27,17 +27,6 @@ class MoneyTests {
     fun exchange_2usd_to_khr_test() {
         initMoneyConfig()
 
-//        applyMoneyConfig {
-//            setProperties(buildMoneyConfigProperties {
-//                setDeliEqual(':')
-//                setDeliSplit(',')
-//            })
-//            // parse("USD:1,KHR:4000")
-//            // appendRate("usd", 1.0)
-//            // appendRate("khr", 4000.0)
-//            fromJson(MyBatchRates.getJsonRates())
-//        }
-
         // Is valid for money config?
         Assert.assertTrue(MoneyConfig.isConfigRatesValid())
 
