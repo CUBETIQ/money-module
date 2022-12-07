@@ -34,7 +34,7 @@ object MoneyConfig {
     // use to custom locales and allow to detect auto formatter, if enable auto locale format
     private val configLocales: ConcurrentMap<String, Locale> = ConcurrentHashMap(LOCALES_INITIAL_SIZE)
 
-    // use to custom currencies and allow to detect auto, when use auto detect for currencies translate
+    // use to custom currencies and allow to detect auto, when use auto-detect for currencies translate
     private val configCurrencies: ConcurrentMap<String, Currency> = ConcurrentHashMap(CURRENCIES_INITIAL_SIZE)
 
     // allow to use config of any states
@@ -165,7 +165,7 @@ object MoneyConfig {
                 .split(getProperties().deliEqual)
             if (temp.size == 2) {
                 val currency = temp[0]
-                    .toUpperCase()
+                    .uppercase()
                     .trim()
                 val key = getConfigKey(currency)
                 val value = temp[1].toDouble()
@@ -185,7 +185,7 @@ object MoneyConfig {
     // append the rate into dataset
     // for config key are completed change inside
     fun appendRate(currency: String, rate: Double) = apply {
-        val currencyKey = currency.toUpperCase().trim()
+        val currencyKey = currency.uppercase().trim()
         val key = getConfigKey(currencyKey)
         if (configRates.containsKey(key)) {
             configRates.replace(key, rate)
@@ -224,7 +224,7 @@ object MoneyConfig {
 
     @Throws(MoneyCurrencyStateException::class)
     fun getRate(currency: StdMoney.Currency): Double {
-        return getConfigRates()[getConfigKey(currency.getCurrency().toUpperCase().trim())]
+        return getConfigRates()[getConfigKey(currency.getCurrency().uppercase().trim())]
             ?: if (fallbackRate > 0) fallbackRate else throw MoneyCurrencyStateException("money currency ${currency.getCurrency()} is not valid!")
     }
 
@@ -306,7 +306,7 @@ object MoneyConfig {
 
     // add money formatter by currency of each money value
     fun addFormatter(currency: String, formatter: MoneyFormatProvider) = apply {
-        val key = getConfigKey(currency.toUpperCase().trim())
+        val key = getConfigKey(currency.uppercase().trim())
         if (configFormatter.containsKey(key)) {
             configFormatter.replace(key, formatter)
         } else {
@@ -318,7 +318,7 @@ object MoneyConfig {
     fun getFormatter(currency: String? = null): MoneyFormatter {
         // apply default formatter
         val formatter = (if (!currency.isNullOrEmpty()) {
-            val key = getConfigKey(currency.toUpperCase().trim())
+            val key = getConfigKey(currency.uppercase().trim())
             configFormatter[key]
         } else {
             null
