@@ -8,7 +8,7 @@ infix fun StdMoney.exchangeTo(currency: StdMoney.Currency): StdMoney {
 
 infix fun StdMoney.exchangeTo(currency: String): StdMoney = this exchangeTo object : StdMoney.Currency {
     override fun getCurrency(): String {
-        return currency.toUpperCase().trim()
+        return currency.uppercase().trim()
     }
 }
 
@@ -69,7 +69,7 @@ infix fun Number.withCurrency(currency: StdMoney.Currency): StdMoney = object : 
 
 infix fun Number.withCurrency(currency: String): StdMoney = this withCurrency object : StdMoney.Currency {
     override fun getCurrency(): String {
-        return currency.toUpperCase().trim()
+        return currency.uppercase().trim()
     }
 }
 

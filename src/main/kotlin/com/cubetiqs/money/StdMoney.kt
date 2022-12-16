@@ -60,7 +60,7 @@ interface StdMoney : MoneyMixin {
         fun initCurrency(currency: String?): Currency {
             return object : Currency {
                 override fun getCurrency(): String {
-                    return currency?.toUpperCase()?.trim() ?: "USD"
+                    return currency?.uppercase()?.trim() ?: "USD"
                 }
             }
         }

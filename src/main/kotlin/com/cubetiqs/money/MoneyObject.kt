@@ -105,7 +105,7 @@ open class MoneyObject(
                             if (temp.length == 1) {
                                 operator(temp[0])
                             } else {
-                                valueOf(temp.toUpperCase().trim())
+                                valueOf(temp.uppercase().trim())
                             }
                         }
                         is Char -> {

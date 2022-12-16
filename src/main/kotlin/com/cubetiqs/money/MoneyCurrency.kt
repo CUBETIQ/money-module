@@ -14,7 +14,7 @@ open class MoneyCurrency(
     private var configs: Map<String, Any?>? = null,
 ) : Serializable, StdMoney.Currency {
     override fun getCurrency(): String {
-        return name.toUpperCase().trim()
+        return name.uppercase().trim()
     }
 
     fun getSymbol(): String? {
